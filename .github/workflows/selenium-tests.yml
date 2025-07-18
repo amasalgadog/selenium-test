@@ -26,4 +26,4 @@ jobs:
         pip install selenium webdriver-manager pytest
 
     - name: Run Selenium tests
-      run: pytest tests/test_edge.py
+      run: pytest tests/second-test.py
