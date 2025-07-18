@@ -1,56 +1,29 @@
-name: Run Pytest
+name: Selenium Edge Tests
 
-on: [push]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
-      - name: Instalar Microsoft Edge y WebDriver en Ubuntu
-        run: |
-          curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-          sudo install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/
-          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-dev.list'
-          sudo apt-get update
-          sudo apt-get install microsoft-edge-stable
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser
+        pip install selenium webdriver-manager pytest
 
-          EDGE_VERSION=$(microsoft-edge-stable --version | grep -oP '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
-
-          wget https://msedgedriver.azureedge.net/$EDGE_VERSION/edgedriver_linux64.zip
-          unzip edgedriver_linux64.zip -d edgedriver
-          echo "$PWD/edgedriver" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest-html  # necesario para el reporte HTML
-
-      - name: Run tests and generate XML + HTML reports
-        run: |
-          pytest --maxfail=1 --disable-warnings -q \
-                 --junitxml=test-results.xml \
-                 --html=report.html --self-contained-html
-
-      - name: Upload XML test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: pytest-xml-results
-          path: test-results.xml
-
-      - name: Upload HTML Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: selenium-html-report
-          path: report.html
+    - name: Run Selenium tests
+      run: pytest tests/test_edge.py
