@@ -2,11 +2,13 @@ import unittest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.edge.service import Service
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 import time
 
 class DuckDuckGoTest(unittest.TestCase):
     def test_search(self):
-        driver = webdriver.Edge(service=Service("C:\\selenium-driver\\edgedriver_win64\\bin\\msedgedriver.exe"))
+        service = Service(EdgeChromiumDriverManager().install())
+        driver = webdriver.Edge(service=service)
         driver.get("https://duckduckgo.com/")
         browser = driver.find_element(By.NAME, "q")
         browser.send_keys("Selenium Python")
